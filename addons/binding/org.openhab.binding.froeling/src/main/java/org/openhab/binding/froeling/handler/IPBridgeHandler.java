@@ -74,8 +74,14 @@ public class IPBridgeHandler extends BaseBridgeHandler {
     }
 
     public synchronized void connect() {
-        if (this.session.isConnected()) {
-            return;
+        if (this.session != null) {
+            if (this.session.isConnected()) {
+                this.logger.info("Already connected to the bridge");
+                return;
+            }
+        } else {
+            this.logger.info("TelnetSession is null, creating new session");
+            this.session = new TelnetSession();
         }
         this.logger.info("Connecting to bridge at " + config.getIpAddress() + ":" + config.getPort());
         try {
@@ -90,6 +96,7 @@ public class IPBridgeHandler extends BaseBridgeHandler {
 
     public boolean isConnected() {
         if (this.session != null) {
+            this.logger.info("Bridge state:" + this.session.isConnected());
             return this.session.isConnected();
         } else {
             return false;
@@ -120,8 +127,7 @@ public class IPBridgeHandler extends BaseBridgeHandler {
         String buffer = "";
         if (!this.session.isConnected()) {
             reconnect();
-        }
-        if (this.session.isConnected()) {
+        } else {
             buffer = this.session.readline();
         }
         return buffer;

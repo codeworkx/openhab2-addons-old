@@ -95,12 +95,14 @@ public class froelingHandler extends BaseThingHandler {
     }
 
     public void getData() {
-        this.logger.debug("Trying to get some data");
+        this.logger.info("Trying to get some data");
         FroelingConfiguration config = null;
         try {
             config = getThing().getConfiguration().as(FroelingConfiguration.class);
         } catch (Exception e) {
             this.logger.error("Error getting Froeling configuration");
+            updateStatus(ThingStatus.OFFLINE, ThingStatusDetail.CONFIGURATION_ERROR,
+                    "Error getting Froeling configuration");
             return;
         }
 
@@ -110,16 +112,24 @@ public class froelingHandler extends BaseThingHandler {
                         "Froeling controller: " + config.getControllerType() + " COM-Port: " + config.getComPort());
                 switch (config.getComPort()) {
                     case "COM1":
+                        this.logger.info("Case: COM1");
                         if (bridgeHandler == null) {
                             this.logger.error("BridgeHandler not available");
+                            updateStatus(ThingStatus.OFFLINE, ThingStatusDetail.BRIDGE_OFFLINE,
+                                    "BridgeHandler not available");
                             return;
                         }
                         // Connect to bridge
                         bridgeHandler.connect();
                         // Check if bridge is connected and get some data
                         if (bridgeHandler.isConnected()) {
+                            this.logger.info("BridgeHandler is connected, calling getP3200COM1Data()");
+                            updateStatus(ThingStatus.ONLINE);
                             getP3200COM1Data();
                         } else {
+                            this.logger.error("BridgeHandler is not connected, not calling getP3200COM1Data()");
+                            updateStatus(ThingStatus.OFFLINE, ThingStatusDetail.BRIDGE_OFFLINE,
+                                    "BridgeHandler is not connected");
                             return;
                         }
                         // Disconnect from bridge
@@ -127,14 +137,20 @@ public class froelingHandler extends BaseThingHandler {
                         break;
                     case "COM2":
                         this.logger.warn("Specified COM-Port not supported yet");
+                        updateStatus(ThingStatus.OFFLINE, ThingStatusDetail.CONFIGURATION_ERROR,
+                                "Specified COM-Port not supported yet");
                         break;
                     default:
                         this.logger.error("Invalid COM-Port selected");
+                        updateStatus(ThingStatus.OFFLINE, ThingStatusDetail.CONFIGURATION_ERROR,
+                                "Invalid COM-Port selected");
                         break;
                 }
                 break;
             default:
                 this.logger.error("Invalid Froeling controller selected");
+                updateStatus(ThingStatus.OFFLINE, ThingStatusDetail.CONFIGURATION_ERROR,
+                        "Invalid Froeling controller selected");
                 break;
         }
     }
@@ -171,15 +187,20 @@ public class froelingHandler extends BaseThingHandler {
                 }
             } catch (Exception e) {
                 this.logger.error("Failed getting data from Froeling controller:", e);
-                updateStatus(ThingStatus.OFFLINE, ThingStatusDetail.CONFIGURATION_ERROR,
+                updateStatus(ThingStatus.OFFLINE, ThingStatusDetail.COMMUNICATION_ERROR,
                         "failed getting data from Froeling controller");
+                break;
             }
             if (iterations >= 200) {
                 this.logger.error("No full data block after 200 iterations.");
+                updateStatus(ThingStatus.OFFLINE, ThingStatusDetail.COMMUNICATION_ERROR,
+                        "No full data block after 200 iterations");
                 break;
             }
             if ((System.currentTimeMillis() - 60000L) > timeStart) {
                 this.logger.error("No full data block after 60 seconds.");
+                updateStatus(ThingStatus.OFFLINE, ThingStatusDetail.COMMUNICATION_ERROR,
+                        "No full data block after 60 seconds");
                 break;
             }
             iterations += 1;
@@ -211,6 +232,10 @@ public class froelingHandler extends BaseThingHandler {
                     // Trim label
                     data[0] = data[0].trim();
 
+                    // Print raw data
+                    this.logger.info("RAW: (" + data[2] + ") " + data[0] + " = " + data[1] + " " + data[4] + "["
+                            + data[3] + "]");
+
                     // Don't try to convert status and error texts to int
                     if (!data[2].equals("1") && !data[2].equals("99")) {
                         int factor = Integer.parseInt(data[3]);
@@ -227,8 +252,8 @@ public class froelingHandler extends BaseThingHandler {
                     if (data[4].equals("") && !data[5].isEmpty()) {
                         data[4] = data[5];
                     }
-                    // Print data
-                    this.logger.info(data[0] + " = " + data[1] + " " + data[4]);
+                    // Print converted data
+                    this.logger.info("CON: (" + data[2] + ") " + data[0] + " = " + data[1] + " " + data[4]);
 
                     switch (data[2]) {
                         case "1":
@@ -341,6 +366,8 @@ public class froelingHandler extends BaseThingHandler {
                 updateState(thing.getChannel(CHANNEL_LASTUPDATE).getUID(), new DateTimeType());
             } catch (Exception e1) {
                 this.logger.error("Error while parsing P3200 controller data: " + e1);
+                updateStatus(ThingStatus.OFFLINE, ThingStatusDetail.COMMUNICATION_ERROR,
+                        "Error while parsing P3200 controller data");
                 return;
             }
             this.logger.info("Done parsing P3200 controller data");
@@ -353,6 +380,7 @@ public class froelingHandler extends BaseThingHandler {
             Bridge bridge = getBridge();
             if (bridge == null) {
                 logger.error("Required bridge not defined");
+                updateStatus(ThingStatus.OFFLINE, ThingStatusDetail.BRIDGE_OFFLINE, "Required bridge not defined");
                 return null;
             }
             ThingHandler handler = bridge.getHandler();
@@ -360,6 +388,7 @@ public class froelingHandler extends BaseThingHandler {
                 this.bridgeHandler = (IPBridgeHandler) handler;
             } else {
                 logger.error("BridgeHandler for bridge " + bridge.getUID() + " not available");
+                updateStatus(ThingStatus.OFFLINE, ThingStatusDetail.BRIDGE_OFFLINE, "BridgeHandler not available");
                 return null;
             }
         }

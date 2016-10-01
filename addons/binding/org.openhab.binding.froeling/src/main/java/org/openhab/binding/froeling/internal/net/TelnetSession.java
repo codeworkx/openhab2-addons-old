@@ -14,8 +14,6 @@ import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
 
 import org.apache.commons.net.telnet.TelnetClient;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * A single telnet session.
@@ -24,10 +22,8 @@ import org.slf4j.LoggerFactory;
  */
 public class TelnetSession implements Closeable {
 
-    private Logger logger = LoggerFactory.getLogger(TelnetSession.class);
-
     private TelnetClient telnetClient = null;
-    private BufferedReader reader = null;
+    private NonblockingBufferedReader nbreader = null;
 
     public TelnetSession() {
         this.telnetClient = new TelnetClient();
@@ -37,8 +33,8 @@ public class TelnetSession implements Closeable {
         this.telnetClient.connect(host, port);
         this.telnetClient.setKeepAlive(true);
 
-        this.reader = new BufferedReader(
-                new InputStreamReader(this.telnetClient.getInputStream(), StandardCharsets.ISO_8859_1), 1024);
+        this.nbreader = new NonblockingBufferedReader(new BufferedReader(
+                new InputStreamReader(this.telnetClient.getInputStream(), StandardCharsets.ISO_8859_1), 1024));
     }
 
     @Override
@@ -54,8 +50,8 @@ public class TelnetSession implements Closeable {
     public String readline() throws IOException {
         String buffer = "";
 
-        if (this.reader != null) {
-            buffer = this.reader.readLine();
+        if (this.nbreader != null) {
+            buffer = this.nbreader.readLine();
         }
         return buffer;
     }
