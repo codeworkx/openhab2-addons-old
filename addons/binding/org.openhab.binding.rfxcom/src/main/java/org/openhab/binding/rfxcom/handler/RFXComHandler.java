@@ -152,10 +152,10 @@ public class RFXComHandler extends BaseThingHandler implements DeviceMessageList
             if (config.deviceId.equals(id)) {
                 RFXComBaseMessage msg = (RFXComBaseMessage) message;
                 String receivedId = packetTypeThingMap.get(msg.packetType).getId();
+                logger.debug("Received message from bridge: {} message: {}", bridge, message);
 
                 if (receivedId.equals(getThing().getThingTypeUID().getId())) {
                     updateStatus(ThingStatus.ONLINE);
-                    logger.debug("Received message from bridge: {} message: {}", bridge, message);
 
                     List<RFXComValueSelector> supportedValueSelectors = msg.getSupportedInputValueSelectors();
 
@@ -232,8 +232,8 @@ public class RFXComHandler extends BaseThingHandler implements DeviceMessageList
                                 case TEMPERATURE:
                                     updateState(CHANNEL_TEMPERATURE, message.convertToState(valueSelector));
                                     break;
-                                case TOTAL_AMP_HOURS:
-                                    updateState(CHANNEL_TOTAL_AMP_HOURS, message.convertToState(valueSelector));
+                                case TOTAL_AMP_HOUR:
+                                    updateState(CHANNEL_TOTAL_AMP_HOUR, message.convertToState(valueSelector));
                                     break;
                                 case TOTAL_USAGE:
                                     updateState(CHANNEL_TOTAL_USAGE, message.convertToState(valueSelector));
