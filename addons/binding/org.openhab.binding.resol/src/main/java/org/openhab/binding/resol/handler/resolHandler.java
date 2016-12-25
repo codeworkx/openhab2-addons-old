@@ -21,6 +21,7 @@ import org.eclipse.smarthome.core.thing.Bridge;
 import org.eclipse.smarthome.core.thing.ChannelUID;
 import org.eclipse.smarthome.core.thing.Thing;
 import org.eclipse.smarthome.core.thing.ThingStatus;
+import org.eclipse.smarthome.core.thing.ThingStatusDetail;
 import org.eclipse.smarthome.core.thing.binding.BaseThingHandler;
 import org.eclipse.smarthome.core.thing.binding.ThingHandler;
 import org.eclipse.smarthome.core.types.Command;
@@ -165,6 +166,8 @@ public class resolHandler extends BaseThingHandler {
             }
         } catch (Exception e) {
             this.logger.debug("" + e);
+            updateStatus(ThingStatus.OFFLINE, ThingStatusDetail.COMMUNICATION_ERROR,
+                    "failed getting data from controller");
         }
     }
 
@@ -344,6 +347,8 @@ public class resolHandler extends BaseThingHandler {
             }
         } catch (Exception e) {
             this.logger.debug("" + e);
+            updateStatus(ThingStatus.OFFLINE, ThingStatusDetail.COMMUNICATION_ERROR,
+                    "Error while parsing controller data");
             hsc.removeListener(hscListener);
             connection.removeListener(conAdapter);
             bridgeHandler.disconnect();
@@ -359,11 +364,11 @@ public class resolHandler extends BaseThingHandler {
     }
 
     private synchronized IPBridgeHandler getResolBridgeHandler() {
-
         if (this.bridgeHandler == null) {
             Bridge bridge = getBridge();
             if (bridge == null) {
                 logger.error("Required bridge not defined");
+                updateStatus(ThingStatus.OFFLINE, ThingStatusDetail.BRIDGE_OFFLINE, "Required bridge not defined");
                 return null;
             }
             ThingHandler handler = bridge.getHandler();
@@ -371,6 +376,7 @@ public class resolHandler extends BaseThingHandler {
                 this.bridgeHandler = (IPBridgeHandler) handler;
             } else {
                 logger.error("BridgeHandler for bridge " + bridge.getUID() + " not available");
+                updateStatus(ThingStatus.OFFLINE, ThingStatusDetail.BRIDGE_OFFLINE, "BridgeHandler not available");
                 return null;
             }
         }

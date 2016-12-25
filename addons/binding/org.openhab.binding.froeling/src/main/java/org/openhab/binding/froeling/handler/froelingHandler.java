@@ -45,19 +45,13 @@ public class froelingHandler extends BaseThingHandler {
     @Override
     public void handleCommand(ChannelUID channelUID, Command command) {
         // TODO: handle command
-
-        // Note: if communication with thing fails for some reason,
-        // indicate that by setting the status with detail information
-        // updateStatus(ThingStatus.OFFLINE, ThingStatusDetail.COMMUNICATION_ERROR,
-        // "Could not control device at IP address x.x.x.x");
     }
 
     @Override
     public void initialize() {
         getIPBridgeHandler();
-
+        
         updateStatus(ThingStatus.ONLINE);
-
         PollingSchedularService pSS = new PollingSchedularService();
         try {
             this.logger.debug("Entering pollingLoop");
@@ -375,7 +369,6 @@ public class froelingHandler extends BaseThingHandler {
     }
 
     private synchronized IPBridgeHandler getIPBridgeHandler() {
-
         if (this.bridgeHandler == null) {
             Bridge bridge = getBridge();
             if (bridge == null) {

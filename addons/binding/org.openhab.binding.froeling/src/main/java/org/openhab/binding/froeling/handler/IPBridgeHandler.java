@@ -51,7 +51,7 @@ public class IPBridgeHandler extends BaseBridgeHandler {
         this.scheduler.schedule(new Runnable() {
             @Override
             public void run() {
-                updateStatus(ThingStatus.INITIALIZING);
+                updateStatus(ThingStatus.ONLINE);
                 if (config == null) {
                     updateStatus(ThingStatus.OFFLINE, ThingStatusDetail.CONFIGURATION_ERROR,
                             "bridge configuration missing");
