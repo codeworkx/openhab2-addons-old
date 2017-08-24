@@ -1,7 +1,6 @@
 package org.openhab.binding.resol.internal;
 
 import java.net.InetAddress;
-import java.util.concurrent.TimeUnit;
 
 import org.apache.commons.lang.StringUtils;
 import org.eclipse.smarthome.core.thing.Bridge;
@@ -38,23 +37,16 @@ public class IPBridgeHandler extends BaseBridgeHandler {
 
     @Override
     public void initialize() {
-        this.scheduler.schedule(new Runnable() {
-            @Override
-            public void run() {
-                updateStatus(ThingStatus.ONLINE);
-                if (config == null) {
-                    updateStatus(ThingStatus.OFFLINE, ThingStatusDetail.CONFIGURATION_ERROR,
-                            "bridge configuration missing");
-                    return;
-                }
+        updateStatus(ThingStatus.ONLINE);
+        if (config == null) {
+            updateStatus(ThingStatus.OFFLINE, ThingStatusDetail.CONFIGURATION_ERROR, "bridge configuration missing");
+            return;
+        }
 
-                if (StringUtils.isEmpty(config.getIpAddress())) {
-                    updateStatus(ThingStatus.OFFLINE, ThingStatusDetail.CONFIGURATION_ERROR,
-                            "bridge address not specified");
-                    return;
-                }
-            }
-        }, 0, TimeUnit.SECONDS);
+        if (StringUtils.isEmpty(config.getIpAddress())) {
+            updateStatus(ThingStatus.OFFLINE, ThingStatusDetail.CONFIGURATION_ERROR, "bridge address not specified");
+            return;
+        }
     }
 
     public Connection connect() {

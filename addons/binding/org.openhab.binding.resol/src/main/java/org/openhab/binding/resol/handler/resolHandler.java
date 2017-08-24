@@ -46,7 +46,6 @@ import de.resol.vbus.Specification.PacketFieldValue;
  * @author Daniel Hillenbrand - Initial contribution
  */
 public class resolHandler extends BaseThingHandler {
-
     private Logger logger = LoggerFactory.getLogger(resolHandler.class);
     private IPBridgeHandler bridgeHandler = null;
 
@@ -204,6 +203,7 @@ public class resolHandler extends BaseThingHandler {
 
                     // Sensor 1
                     case "00_0010_4214_10_0100_000_2_0":
+                    case "00_0010_4278_10_0100_000_2_0":
                     case "00_0010_427B_10_0100_000_2_0":
                         temp = Math.round(rawValue * 100) / 100.0;
                         updateState(thing.getChannel(TEMPERATURE_S1).getUID(), new DecimalType(Double.toString(temp)));
@@ -211,6 +211,7 @@ public class resolHandler extends BaseThingHandler {
 
                     // Sensor 2
                     case "00_0010_4214_10_0100_002_2_0":
+                    case "00_0010_4278_10_0100_002_2_0":
                     case "00_0010_427B_10_0100_002_2_0":
                         temp = Math.round(rawValue * 100) / 100.0;
                         updateState(thing.getChannel(TEMPERATURE_S2).getUID(), new DecimalType(Double.toString(temp)));
@@ -270,6 +271,7 @@ public class resolHandler extends BaseThingHandler {
 
                     // Operating hours relais 1
                     case "00_0010_4214_10_0100_012_2_0":
+                    case "00_0010_4278_10_0100_012_2_0":
                     case "00_0010_427B_10_0100_010_2_0":
                         updateState(thing.getChannel(OPERATINGHOURS_RELAIS1).getUID(),
                                 new DecimalType(Double.toString(rawValue)));
@@ -335,8 +337,9 @@ public class resolHandler extends BaseThingHandler {
                         break;
 
                     // Status mask
+                    case "00_0010_4278_10_0100_022_1_0":
                     case "00_0010_427B_10_0100_024_4_0":
-                        updateState(thing.getChannel(STATUSMASK).getUID(), new StringType(Double.toString(rawValue)));
+                        updateState(thing.getChannel(STATUSMASK).getUID(), new DecimalType(Double.toString(temp)));
                         break;
 
                     default:
