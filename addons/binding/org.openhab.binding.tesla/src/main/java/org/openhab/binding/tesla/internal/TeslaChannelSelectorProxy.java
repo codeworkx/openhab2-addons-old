@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2014-2016 by the respective copyright holders.
+ * Copyright (c) 2010-2018 by the respective copyright holders.
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -167,7 +167,19 @@ public class TeslaChannelSelectorProxy {
 
             }
         },
-        CHARGE_RATE("charge_rate", "chargerate", StringType.class, false),
+        CHARGE_RATE("charge_rate", "chargerate", DecimalType.class, false) {
+            @Override
+            public State getState(String s, TeslaChannelSelectorProxy proxy, Map<String, String> properties) {
+                State someState = super.getState(s);
+                double odo = ((DecimalType) someState).doubleValue();
+                if (properties.containsKey("chargerateunits") && properties.get("chargerateunits").equals("km/hr")) {
+                    return super.getState(String.valueOf(odo * 1.609344));
+                } else {
+                    return someState;
+                }
+
+            }
+        },
         CHARGE_STARTING_RANGE("charge_starting_range", "chargestartingrange", StringType.class, false),
         CHARGE_STARTING_SOC("charge_starting_soc", "chargestartingsoc", StringType.class, false),
         CHARGE_STATE("charging_state", "chargingstate", StringType.class, false),
@@ -285,7 +297,7 @@ public class TeslaChannelSelectorProxy {
 
             }
         },
-        EST_HEADING("est_heading", "headingestimation", DecimalType.class, false),
+        EST_HEADING("est_heading", "estimatedheading", DecimalType.class, false),
         EST_RANGE("est_range", "estimatedrange", DecimalType.class, false) {
             @Override
             public State getState(String s, TeslaChannelSelectorProxy proxy, Map<String, String> properties) {
@@ -520,14 +532,12 @@ public class TeslaChannelSelectorProxy {
         ODOMETER("odometer", "odometer", DecimalType.class, false) {
             @Override
             public State getState(String s, TeslaChannelSelectorProxy proxy, Map<String, String> properties) {
-                State someState = super.getState(s);
-                double odo = ((DecimalType) someState).doubleValue();
+                double odo = Math.round(((DecimalType) super.getState(s)).doubleValue() * 10.0) / 10.0;
                 if (properties.containsKey("distanceunits") && properties.get("distanceunits").equals("km/hr")) {
-                    return super.getState(String.valueOf(odo * 1.609344));
-                } else {
-                    return someState;
+                    odo = odo * 1.609344;
                 }
 
+                return super.getState(String.valueOf(odo));
             }
         },
         OPTION_CODES("option_codes", "options", StringType.class, true),
@@ -689,90 +699,13 @@ public class TeslaChannelSelectorProxy {
                 return super.getState(s);
             }
         },
-        SEAT_HEATER_LEFT("seat_heater_left", "leftseatheater", OnOffType.class, false) {
-            @Override
-            public State getState(String s, TeslaChannelSelectorProxy proxy, Map<String, String> properties) {
-                if (s.equals("true") || s.equals("1")) {
-                    return super.getState("ON");
-                }
-                if (s.equals("false") || s.equals("0")) {
-                    return super.getState("OFF");
-                }
-                return super.getState(s);
-            }
-        },
-        SEAT_HEATER_RIGHT("seat_heater_right", "rightseatheater", OnOffType.class, false) {
-            @Override
-            public State getState(String s, TeslaChannelSelectorProxy proxy, Map<String, String> properties) {
-                if (s.equals("true") || s.equals("1")) {
-                    return super.getState("ON");
-                }
-                if (s.equals("false") || s.equals("0")) {
-                    return super.getState("OFF");
-                }
-                return super.getState(s);
-            }
-        },
-        SEAT_HEATER_REAR_LEFT("seat_heater_rear_left", "leftrearseatheater", OnOffType.class, false) {
-            @Override
-            public State getState(String s, TeslaChannelSelectorProxy proxy, Map<String, String> properties) {
-                if (s.equals("true") || s.equals("1")) {
-                    return super.getState("ON");
-                }
-                if (s.equals("false") || s.equals("0")) {
-                    return super.getState("OFF");
-                }
-                return super.getState(s);
-            }
-        },
-        SEAT_HEATER_REAR_RIGHT("seat_heater_rear_right", "rightrearseatheater", OnOffType.class, false) {
-            @Override
-            public State getState(String s, TeslaChannelSelectorProxy proxy, Map<String, String> properties) {
-                if (s.equals("true") || s.equals("1")) {
-                    return super.getState("ON");
-                }
-                if (s.equals("false") || s.equals("0")) {
-                    return super.getState("OFF");
-                }
-                return super.getState(s);
-            }
-        },
-        SEAT_HEATER_REAR_CENTER("seat_heater_rear_center", "centerrearseatheater", OnOffType.class, false) {
-            @Override
-            public State getState(String s, TeslaChannelSelectorProxy proxy, Map<String, String> properties) {
-                if (s.equals("true") || s.equals("1")) {
-                    return super.getState("ON");
-                }
-                if (s.equals("false") || s.equals("0")) {
-                    return super.getState("OFF");
-                }
-                return super.getState(s);
-            }
-        },
-        SEAT_HEATER_REAR_RIGHT_BACK("seat_heater_rear_right_back", "rightrearbackseatheater", OnOffType.class, false) {
-            @Override
-            public State getState(String s, TeslaChannelSelectorProxy proxy, Map<String, String> properties) {
-                if (s.equals("true") || s.equals("1")) {
-                    return super.getState("ON");
-                }
-                if (s.equals("false") || s.equals("0")) {
-                    return super.getState("OFF");
-                }
-                return super.getState(s);
-            }
-        },
-        SEAT_HEATER_REAR_RIGHT_LEFT("seat_heater_rear_left_back", "leftrearbackseatheater", OnOffType.class, false) {
-            @Override
-            public State getState(String s, TeslaChannelSelectorProxy proxy, Map<String, String> properties) {
-                if (s.equals("true") || s.equals("1")) {
-                    return super.getState("ON");
-                }
-                if (s.equals("false") || s.equals("0")) {
-                    return super.getState("OFF");
-                }
-                return super.getState(s);
-            }
-        },
+        SEAT_HEATER_LEFT("seat_heater_left", "leftseatheater", DecimalType.class, false),
+        SEAT_HEATER_RIGHT("seat_heater_right", "rightseatheater", DecimalType.class, false),
+        SEAT_HEATER_REAR_LEFT("seat_heater_rear_left", "leftrearseatheater", DecimalType.class, false),
+        SEAT_HEATER_REAR_RIGHT("seat_heater_rear_right", "rightrearseatheater", DecimalType.class, false),
+        SEAT_HEATER_REAR_CENTER("seat_heater_rear_center", "centerrearseatheater", DecimalType.class, false),
+        SEAT_HEATER_REAR_RIGHT_BACK("seat_heater_rear_right_back", "rightrearbackseatheater", DecimalType.class, false),
+        SEAT_HEATER_REAR_RIGHT_LEFT("seat_heater_rear_left_back", "leftrearbackseatheater", DecimalType.class, false),
         SEAT_TYPE("seat_type", "seattype", DecimalType.class, true),
         SCHEDULED_CHARGING_PENDING("scheduled_charging_pending", "scheduledchargingpending", OnOffType.class, false) {
             @Override
@@ -857,11 +790,9 @@ public class TeslaChannelSelectorProxy {
         TIMESTAMP("timestamp", "eventstamp", DateTimeType.class, false) {
             @Override
             public State getState(String s, TeslaChannelSelectorProxy proxy, Map<String, String> properties) {
-                Date date = new Date();
-                SimpleDateFormat DATE_FORMATTER = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss");
-
-                date.setTime(Long.valueOf(s));
-                return super.getState(DATE_FORMATTER.format(date));
+                Date date = new Date(Long.valueOf(s));
+                SimpleDateFormat dateFormatter = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSZ");
+                return super.getState(dateFormatter.format(date));
             }
         },
         TRIP_CARGING("trip_charging", "tripcharging", OnOffType.class, false) {
@@ -910,6 +841,30 @@ public class TeslaChannelSelectorProxy {
         },
         VIN("vin", "vin", StringType.class, true),
         WAKEUP(null, "wakeup", OnOffType.class, false) {
+            @Override
+            public State getState(String s, TeslaChannelSelectorProxy proxy, Map<String, String> properties) {
+                if (s.equals("true") || s.equals("1")) {
+                    return super.getState("ON");
+                }
+                if (s.equals("false") || s.equals("0")) {
+                    return super.getState("OFF");
+                }
+                return super.getState(s);
+            }
+        },
+        ALLOWWAKEUP(null, "allowwakeup", OnOffType.class, false) {
+            @Override
+            public State getState(String s, TeslaChannelSelectorProxy proxy, Map<String, String> properties) {
+                if (s.equals("true") || s.equals("1")) {
+                    return super.getState("ON");
+                }
+                if (s.equals("false") || s.equals("0")) {
+                    return super.getState("OFF");
+                }
+                return super.getState(s);
+            }
+        },
+        ENABLEEVENTS(null, "enableevents", OnOffType.class, false) {
             @Override
             public State getState(String s, TeslaChannelSelectorProxy proxy, Map<String, String> properties) {
                 if (s.equals("true") || s.equals("1")) {
