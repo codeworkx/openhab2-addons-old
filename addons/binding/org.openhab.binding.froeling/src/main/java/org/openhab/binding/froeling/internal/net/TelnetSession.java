@@ -30,21 +30,29 @@ public class TelnetSession implements Closeable {
     }
 
     public void open(String host, int port) throws IOException {
-        this.telnetClient.connect(host, port);
-        this.telnetClient.setKeepAlive(true);
+        if (this.telnetClient != null) {
+            this.telnetClient.connect(host, port);
+            this.telnetClient.setKeepAlive(true);
 
-        this.nbreader = new NonblockingBufferedReader(new BufferedReader(
-                new InputStreamReader(this.telnetClient.getInputStream(), StandardCharsets.ISO_8859_1), 1024));
+            this.nbreader = new NonblockingBufferedReader(new BufferedReader(
+                    new InputStreamReader(this.telnetClient.getInputStream(), StandardCharsets.ISO_8859_1), 1024));
+        }
     }
 
     @Override
     public void close() throws IOException {
-        this.telnetClient.setKeepAlive(false);
-        this.telnetClient.disconnect();
+        if (this.telnetClient != null) {
+            this.telnetClient.setKeepAlive(false);
+            this.telnetClient.disconnect();
+        }
     }
 
     public boolean isConnected() {
-        return this.telnetClient.isConnected();
+        if (this.telnetClient != null) {
+            return this.telnetClient.isConnected();
+        } else {
+            return false;
+        }
     }
 
     public String readline() throws IOException {
