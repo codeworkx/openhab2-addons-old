@@ -1,5 +1,6 @@
 /**
- * Copyright (c) 2014-2015 openHAB UG (haftungsbeschraenkt) and others.
+ * Copyright (c) 2010-2018 by the respective copyright holders.
+ *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -83,20 +84,20 @@ public class IPBridgeHandler extends BaseBridgeHandler {
             this.logger.info("TelnetSession is null, creating new session");
             this.session = new TelnetSession();
         }
-        this.logger.info("Connecting to bridge at " + config.getIpAddress() + ":" + config.getPort());
+        this.logger.info("Connecting to bridge at {}:{}", config.getIpAddress(), config.getPort());
         try {
             this.session.open(config.getIpAddress(), config.getPort());
         } catch (IOException e) {
-            this.logger.error("Failed to connect to bridge at " + config.getIpAddress() + ":" + config.getPort());
+            this.logger.error("Failed to connect to bridge at {}:{}", config.getIpAddress(), config.getPort());
             updateStatus(ThingStatus.OFFLINE, ThingStatusDetail.CONFIGURATION_ERROR, "failed to connect");
         }
-        this.logger.debug("Connected to bridge at " + config.getIpAddress() + ":" + config.getPort());
+        this.logger.debug("Connected to bridge at {}:{}", config.getIpAddress(), config.getPort());
         updateStatus(ThingStatus.ONLINE);
     }
 
     public boolean isConnected() {
         if (this.session != null) {
-            this.logger.info("Bridge state:" + this.session.isConnected());
+            this.logger.info("Bridge state: {}", this.session.isConnected());
             return this.session.isConnected();
         } else {
             return false;
@@ -106,8 +107,10 @@ public class IPBridgeHandler extends BaseBridgeHandler {
     public synchronized void disconnect() {
         this.logger.info("Disconnecting from bridge");
         try {
-            this.session.close();
-        } catch (IOException e) {
+            if (this.session != null) {
+                this.session.close();
+            }
+        } catch (Exception e) {
             this.logger.error("Error disconnecting from bridge", e);
         }
     }
@@ -125,10 +128,12 @@ public class IPBridgeHandler extends BaseBridgeHandler {
 
     public String readInput() throws IOException {
         String buffer = "";
-        if (!this.session.isConnected()) {
-            reconnect();
-        } else {
-            buffer = this.session.readline();
+        if (this.session != null) {
+            if (!this.session.isConnected()) {
+                reconnect();
+            } else {
+                buffer = this.session.readline();
+            }
         }
         return buffer;
     }

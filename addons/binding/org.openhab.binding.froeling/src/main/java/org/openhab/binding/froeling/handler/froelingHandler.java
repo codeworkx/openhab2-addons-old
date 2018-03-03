@@ -1,5 +1,6 @@
 /**
- * Copyright (c) 2014-2015 openHAB UG (haftungsbeschraenkt) and others.
+ * Copyright (c) 2010-2018 by the respective copyright holders.
+ *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -50,7 +51,7 @@ public class froelingHandler extends BaseThingHandler {
     @Override
     public void initialize() {
         getIPBridgeHandler();
-        
+
         updateStatus(ThingStatus.ONLINE);
         PollingSchedularService pSS = new PollingSchedularService();
         try {
@@ -70,11 +71,11 @@ public class froelingHandler extends BaseThingHandler {
             long pollingInterval = config.getPollingInterval().longValue();
 
             if (pollingInterval < 5 || pollingInterval > 3600) {
-                this.logger.warn("Invalid polling rate: " + pollingInterval + ". Using 5 seconds.");
+                this.logger.warn("Invalid polling rate: {}. Using 5 seconds.", pollingInterval);
                 pollingInterval = 5;
             }
 
-            this.logger.info("Starting PollingService with interval: " + pollingInterval + " seconds");
+            this.logger.info("Starting PollingService with interval: {} seconds", pollingInterval);
             ScheduledExecutorService executor = Executors.newSingleThreadScheduledExecutor();
             executor.scheduleWithFixedDelay(new PollingService(), initialDelay, pollingInterval, TimeUnit.SECONDS);
         }
@@ -102,8 +103,8 @@ public class froelingHandler extends BaseThingHandler {
 
         switch (config.getControllerType()) {
             case "P3200":
-                this.logger.info(
-                        "Froeling controller: " + config.getControllerType() + " COM-Port: " + config.getComPort());
+                this.logger.info("Froeling controller: {} COM-Port: {}", config.getControllerType(),
+                        config.getComPort());
                 switch (config.getComPort()) {
                     case "COM1":
                         this.logger.info("Case: COM1");
@@ -227,8 +228,8 @@ public class froelingHandler extends BaseThingHandler {
                     data[0] = data[0].trim();
 
                     // Print raw data
-                    this.logger.info("RAW: (" + data[2] + ") " + data[0] + " = " + data[1] + " " + data[4] + "["
-                            + data[3] + "]");
+                    // this.logger.info("RAW: (" + data[2] + ") " + data[0] + " = " + data[1] + " " + data[4] + "["
+                    // + data[3] + "]");
 
                     // Don't try to convert status and error texts to int
                     if (!data[2].equals("1") && !data[2].equals("99")) {
@@ -247,7 +248,7 @@ public class froelingHandler extends BaseThingHandler {
                         data[4] = data[5];
                     }
                     // Print converted data
-                    this.logger.info("CON: (" + data[2] + ") " + data[0] + " = " + data[1] + " " + data[4]);
+                    this.logger.info("CON: ({}) {} = {} {}", data[2], data[0], data[1], data[4]);
 
                     switch (data[2]) {
                         case "1":
@@ -352,14 +353,13 @@ public class froelingHandler extends BaseThingHandler {
                             updateState(thing.getChannel(CHANNEL_ERRORS).getUID(), new StringType(data[1]));
                             break;
                         default:
-                            this.logger.warn(
-                                    "No channel available for " + data[0] + " with value " + data[1] + " " + data[4]);
+                            this.logger.warn("No channel available for {} with value {} {}", data[0], data[1], data[4]);
                             break;
                     }
                 }
                 updateState(thing.getChannel(CHANNEL_LASTUPDATE).getUID(), new DateTimeType());
             } catch (Exception e1) {
-                this.logger.error("Error while parsing P3200 controller data: " + e1);
+                this.logger.error("Error while parsing P3200 controller data: {}", e1);
                 updateStatus(ThingStatus.OFFLINE, ThingStatusDetail.COMMUNICATION_ERROR,
                         "Error while parsing P3200 controller data");
                 return;
@@ -380,7 +380,7 @@ public class froelingHandler extends BaseThingHandler {
             if (handler instanceof IPBridgeHandler) {
                 this.bridgeHandler = (IPBridgeHandler) handler;
             } else {
-                logger.error("BridgeHandler for bridge " + bridge.getUID() + " not available");
+                logger.error("BridgeHandler for bridge {} not available", bridge.getUID());
                 updateStatus(ThingStatus.OFFLINE, ThingStatusDetail.BRIDGE_OFFLINE, "BridgeHandler not available");
                 return null;
             }

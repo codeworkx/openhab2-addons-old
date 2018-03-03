@@ -1,5 +1,6 @@
 /**
- * Copyright (c) 2014 openHAB UG (haftungsbeschraenkt) and others.
+ * Copyright (c) 2010-2018 by the respective copyright holders.
+ *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -14,6 +15,8 @@ import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
 
 import org.apache.commons.net.telnet.TelnetClient;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * A single telnet session.
@@ -22,6 +25,7 @@ import org.apache.commons.net.telnet.TelnetClient;
  */
 public class TelnetSession implements Closeable {
 
+    private Logger logger = LoggerFactory.getLogger(TelnetSession.class);
     private TelnetClient telnetClient = null;
     private NonblockingBufferedReader nbreader = null;
 
@@ -41,9 +45,15 @@ public class TelnetSession implements Closeable {
 
     @Override
     public void close() throws IOException {
-        if (this.telnetClient != null) {
-            this.telnetClient.setKeepAlive(false);
-            this.telnetClient.disconnect();
+        try {
+            if (this.telnetClient != null) {
+                if (isConnected()) {
+                    this.telnetClient.setKeepAlive(false);
+                }
+                this.telnetClient.disconnect();
+            }
+        } catch (Exception e) {
+            this.logger.error("Error closing telnetClient", e);
         }
     }
 

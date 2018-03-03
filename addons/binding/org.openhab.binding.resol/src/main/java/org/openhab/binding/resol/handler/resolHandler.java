@@ -1,5 +1,6 @@
 /**
- * Copyright (c) 2014-2015 openHAB UG (haftungsbeschraenkt) and others.
+ * Copyright (c) 2010-2018 by the respective copyright holders.
+ *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -30,7 +31,6 @@ import org.openhab.binding.resol.internal.config.ResolConfiguration;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import de.resol.vbus.Connection;
 import de.resol.vbus.ConnectionAdapter;
 import de.resol.vbus.HeaderSet;
 import de.resol.vbus.HeaderSetConsolidator;
@@ -49,7 +49,7 @@ public class resolHandler extends BaseThingHandler {
     private Logger logger = LoggerFactory.getLogger(resolHandler.class);
     private IPBridgeHandler bridgeHandler = null;
 
-    public Connection connection = null;
+    public de.resol.vbus.Connection connection = null;
     public ConnectionAdapter conAdapter = null;
     public HeaderSetConsolidator<Packet> hsc = null;
     public HeaderSetConsolidatorListener<Packet> hscListener = null;
@@ -114,7 +114,8 @@ public class resolHandler extends BaseThingHandler {
                 return;
             }
 
-            if (connection == null || !connection.getConnectionState().equals(Connection.ConnectionState.CONNECTED)) {
+            if (connection == null
+                    || !connection.getConnectionState().equals(de.resol.vbus.Connection.ConnectionState.CONNECTED)) {
                 connection = bridgeHandler.connect();
             }
 
@@ -129,12 +130,12 @@ public class resolHandler extends BaseThingHandler {
                     private Logger logger = LoggerFactory.getLogger(IPBridgeHandler.class);
 
                     @Override
-                    public void connectionStateChanged(Connection connection) {
+                    public void connectionStateChanged(de.resol.vbus.Connection connection) {
                         // this.logger.debug("connectionStateChanged: " + connection.getConnectionState());
                     }
 
                     @Override
-                    public void packetReceived(Connection connection, Packet packet) {
+                    public void packetReceived(de.resol.vbus.Connection connection, Packet packet) {
                         this.logger.debug("packetReceived: " + packet.getId());
                         hsc.addHeader(packet);
                     }
@@ -189,7 +190,7 @@ public class resolHandler extends BaseThingHandler {
         try {
             for (PacketFieldValue pfv : pfvs) {
                 String id = pfv.getPacketFieldId();
-                double rawValue = pfv.getRawValue();
+                double rawValue = pfv.getRawValueDouble();
                 String name = pfv.getName();
                 String text = pfv.formatTextValue(null, null);
                 double temp = 0;
